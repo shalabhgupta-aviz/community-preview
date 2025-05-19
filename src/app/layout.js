@@ -19,11 +19,9 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${notoSans.variable}`}>
       <body className="antialiased">
         <ClientProvider>
-          <ErrorBoundary>
-            <Layout>
-              {children}
-            </Layout>
-          </ErrorBoundary>
+          <Layout>
+            {children}
+          </Layout>
         </ClientProvider>
       </body>
     </html>

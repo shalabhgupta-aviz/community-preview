@@ -14,18 +14,26 @@ import { uploadUserAvatar } from '../../lib/users';
 import { useGetCurrentUserQuery, useUpdateUserMutation } from '../../store/api/wpApi';
 import { decodeHtml } from '../../plugins/decodeHTMLentities';
 import { getToken } from '../../lib/auth';
+import WelcomePopup from '../../components/popups/WelcomePopup';
 
 export default function ProfilePage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { data: session } = useSession();
+  const reduxToken = useSelector((s) => s.auth.token);
+  const reduxUser = useSelector((s) => s.auth.user);
+  const userData = session?.user;
+  const isUserLoading = false;
+  const queryError = null;
 
   // Fetch current user via RTK Query
-  const {
-    data: user,
-    isLoading: isUserLoading,
-    error: queryError,
-  } = useGetCurrentUserQuery();
+  // const {
+  //   data: userData,
+  //   isLoading: isUserLoading,
+  //   error: queryError,
+  // } = useGetCurrentUserQuery();
+
+  const user = userData || reduxUser;
 
   // Mutation hook for updating user profile
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
@@ -73,7 +81,6 @@ export default function ProfilePage() {
     );
   }
 
-  console.log('queryError', queryError);
   if (queryError) {
     return (
       <motion.div
@@ -133,6 +140,10 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = async () => {
+    const cookieToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('token='))
+      ?.split('=')[1];
     try {
       setFormError(null);
 
@@ -149,7 +160,7 @@ export default function ProfilePage() {
         throw new Error('Website URL must start with http:// or https://');
       }
       console.log('session', session);
-      if (!session?.wpJwt || !session?.user?.id) {
+      if (!session?.wpJwt && !session?.user?.id && !reduxToken && !cookieToken && !user) {
         throw new Error('Missing authentication data');
       }
 
@@ -159,8 +170,7 @@ export default function ProfilePage() {
       if (editedUser.website !== user.url) data.url = editedUser.website;
       if (editedUser.bio !== user.description) data.description = editedUser.bio;
 
-      // Call updateUser mutation and unwrap the response to handle errors
-      const updatedResponse = await updateUser({ id: session?.user?.id, data }).unwrap();
+      const updatedResponse = await updateUser({ id: session?.user?.id || user.id, data }).unwrap();
 
       // Dispatch setUser to sync Redux with the updated user data
       dispatch(setUser(updatedResponse));
@@ -204,6 +214,7 @@ export default function ProfilePage() {
         transition={{ duration: 0.5 }}
         className="max-w-6xl mx-auto p-4"
       >
+        <WelcomePopup showOnFirstLogin={true} showOnAutoSignIn={true} />
         <div className="flex justify-between items-center mb-6">
           <motion.h1
             initial={{ opacity: 0, x: -20 }}

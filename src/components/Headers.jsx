@@ -14,8 +14,10 @@ export default function Header() {
   const reduxUser = useSelector((s) => s.auth.user);
   const user = reduxUser || session?.user;
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const token = session?.wpJwt || useSelector((s) => s.auth.token);
   const [hasToken, setHasToken] = useState(false);
   const profileDropdownRef = useRef(null);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,9 +42,15 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
+      setLogoutLoading(true);
       await signOut({ callbackUrl: '/login' });
+      dispatch(logoutAction());
+      router.push('/login');
     } catch (err) {
       console.error('Logout failed:', err);
+      toast.error('Failed to logout. Please try again.');
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
@@ -85,12 +93,12 @@ export default function Header() {
 
         {/* Right controls */}
         <div className="flex items-center space-x-4">
-          {hasToken && <NotificationsBell />}
+          {token && <NotificationsBell />}
 
           <AnimatePresence mode="wait">
             {status === 'loading' ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
-            ) : hasToken ? (
+            ) : token ? (
               <motion.div
                 key="logged-in"
                 initial={{ opacity: 0, x: 20 }}
@@ -120,8 +128,11 @@ export default function Header() {
                     <Link href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setShowProfileDropdown(false)}>
                       Profile
                     </Link>
-                    <button onClick={() => { setShowProfileDropdown(false); handleLogout(); }} className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
-                      Logout
+                    <button
+                      onClick={() => { setShowProfileDropdown(false); handleLogout(); }}
+                      className={`block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 ${logoutLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {logoutLoading ? 'Logging out...' : 'Logout'}
                     </button>
                   </div>
                 )}

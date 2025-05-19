@@ -42,14 +42,14 @@ export const authOptions = {
         console.error('WP social-login failed', res.error)
         return false
       }
+      if (res.status === 200) {
+        const { data: { token: wpJwt, user: wpUser } } = res
 
-      const { token: wpJwt, user: wpUser } = res
-
-      // Attach the WP JWT and user data onto the NextAuth user object
-      user.wpJwt  = wpJwt
-      user.wpUser = wpUser
-
-      return true
+        // Attach the WP JWT and user data onto the NextAuth user object
+        user.wpJwt  = wpJwt
+        user.wpUser = wpUser
+        return true
+      }
     },
 
     // 🛡️ 2) in the jwt callback, persist wpJwt/wpUser into the token
@@ -63,8 +63,6 @@ export const authOptions = {
 
     // 👀 3) finally, expose them in your client session
     async session({ session, token }) {
-      console.log('session', session);
-      console.log('token', token);
       session.wpJwt  = token.wpJwt
       session.user   = token.wpUser
       return session

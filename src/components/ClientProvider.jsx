@@ -1,6 +1,6 @@
 'use client';
 
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 // Import store and persistor as named exports
 import { store, persistor } from '@/store';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -23,7 +23,9 @@ export default function ClientProvider({ children }) {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <SessionProvider>
-          <ReduxSessionSync>{children}</ReduxSessionSync>
+          <ReduxSessionSync>
+            {children}
+          </ReduxSessionSync>
         </SessionProvider>
       </PersistGate>
     </Provider>
@@ -34,40 +36,28 @@ function ReduxSessionSync({ children }) {
   const { data: session, status } = useSession();
   const [ready, setReady] = useState(false);
   const reduxToken = useSelector((s) => s.auth.token);
-
-
+  const dispatch = useDispatch();
   useEffect(() => {
-    if (status !== 'authenticated' && status !== 'unauthenticated') return;
-
+    const cookieToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('token='))
+      ?.split('=')[1];
     (async () => {
-
-      const cookieToken = getToken();
-      if (!reduxToken && cookieToken) {
+      const tok = session?.wpJwt || cookieToken;
+      if (tok) {
+        setToken(tok);
         try {
-          const freshUser = await getUserProfile(cookieToken);
-          dispatch(loginSuccess({ token: cookieToken, user: freshUser }));
+          const profile = await getUserProfile(tok);
+          console.log('profile', profile);
+          console.log('Fetched user profile:', profile);
+          dispatch(loginSuccess({
+            token: tok,
+            user: profile.data   // 👈 grab the inner `data` object
+          }));
         } catch (_) {
-          // cookie was stale or invalid
+          // token was stale or invalid
+          console.log('token was stale or invalid');
         }
-      }
-
-      let token;
-      let user;
-
-      if (session?.wpJwt) {
-        token = session.wpJwt;
-        setToken(token);
-        user = await getUserProfile(token);
-      } else {
-        token = getToken();
-        if (token) {
-          user = await getUserProfile(token);
-        }
-      }
-
-      if (user && token) {
-        // loginSuccess sets both token & user in Redux
-        store.dispatch(loginSuccess({ token, user }));
       }
 
       setReady(true);

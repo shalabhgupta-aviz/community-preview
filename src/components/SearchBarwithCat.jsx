@@ -8,7 +8,12 @@ export default function SearchBarwithCat() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestedTerm, setSuggestedTerm] = useState('');
+  const [filteredResults, setFilteredResults] = useState([]);
+  const [isMouseInside, setIsMouseInside] = useState(false);
   const searchRef = useRef(null);
+  const resultsRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   const categories = [
     { name: 'SONiC', link: '/topics/sonic-amp-netops?id=31927' },
@@ -16,23 +21,45 @@ export default function SearchBarwithCat() {
     { name: 'Observability', link: '/topics/sonic-amp-netops?id=31927' }
   ];
 
-  const suggestions = [
-    'What is SONiC?',
-    'What is NetOps?',
-    'How networking people are integrating SONiC'
-  ];
-
   useEffect(() => {
     const debounceTimer = setTimeout(async () => {
-      if (searchTerm.length < 2) {
+      if (searchTerm.length < 3) {
         setSearchResults([]);
+        setSuggestedTerm('');
         return;
       }
 
       setIsLoading(true);
       try {
         const results = await allSearch(searchTerm);
-        setSearchResults(results);
+        if (results.status === 200) {
+          const fetchedResults = results.data;
+
+          // Filter search results based on the new algorithm
+          const filteredResults = fetchedResults.filter(result => {
+            if (result.type === 'topic') {
+              return result.title.toLowerCase().includes(searchTerm.toLowerCase());
+            } else if (result.type === 'reply') {
+              return result.content.toLowerCase().includes(searchTerm.toLowerCase());
+            }
+            return false;
+          });
+
+          setSearchResults(filteredResults);
+
+          // Filter only for suggestions
+          const suggestionCandidates = filteredResults.filter(result => {
+            const resultFirstWord = result.type === 'topic' ? result.title.split(' ')[0].toLowerCase() : result.topic_slug.split(' ')[0].toLowerCase();
+            return resultFirstWord.startsWith(searchTerm.split(' ')[0].toLowerCase());
+          });
+
+          if (suggestionCandidates.length > 0) {
+            const firstResult = suggestionCandidates[0];
+            setSuggestedTerm(firstResult.type === 'topic' ? firstResult.title : firstResult.topic_slug);
+          } else {
+            setSuggestedTerm('');
+          }
+        }
       } catch (error) {
         console.error('Error: Failed to search list', error);
       } finally {
@@ -45,9 +72,11 @@ export default function SearchBarwithCat() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setSearchResults([]);
-        setSearchTerm('');
+      if (
+        searchRef.current && !searchRef.current.contains(event.target) &&
+        resultsRef.current && !resultsRef.current.contains(event.target)
+      ) {
+        clearSearchResults();
       }
     }
 
@@ -57,8 +86,43 @@ export default function SearchBarwithCat() {
     };
   }, []);
 
+  useEffect(() => {
+    if ((searchResults.length > 0 || filteredResults.length > 0) && !isMouseInside && !searchTerm) {
+      timeoutRef.current = setTimeout(() => {
+        clearSearchResults();
+      }, 7000);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [searchResults, filteredResults, isMouseInside, searchTerm]);
+
+  const clearSearchResults = () => {
+    setSearchResults([]);
+    setFilteredResults([]);
+    setSearchTerm('');
+    setSuggestedTerm('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab' && suggestedTerm) {
+      e.preventDefault();
+      setSearchTerm(suggestedTerm);
+      setSuggestedTerm('');
+      // Filter search results to only include those that match the suggested term
+      const newFilteredResults = searchResults.filter(result => {
+        const resultTitle = result.type === 'topic' ? result.title : result.topic_slug;
+        return resultTitle.toLowerCase().startsWith(suggestedTerm.toLowerCase());
+      });
+      setFilteredResults(newFilteredResults);
+    }
+  };
+
   return (
-    <div className="relative" ref={searchRef}>
+    <div className="relative" ref={searchRef} onMouseEnter={() => setIsMouseInside(true)} onMouseLeave={() => setIsMouseInside(false)}>
       {/* Category Links */}
       <div className="inline-flex mt-8">
         <div className='flex flex-row text-white font-bold mr-5'>
@@ -92,9 +156,15 @@ export default function SearchBarwithCat() {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Search topics and replies..."
           className="flex-grow px-6 py-3 text-black focus:outline-none"
         />
+        {suggestedTerm && (
+          <span className="absolute left-0 px-6 py-3 text-gray-400 pointer-events-none left-[25px]">
+            {searchTerm + suggestedTerm.slice(searchTerm.length)}
+          </span>
+        )}
         {isLoading && (
           <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
@@ -102,36 +172,23 @@ export default function SearchBarwithCat() {
         )}
       </motion.div>
 
-      {/* Suggestions */}
-      {/* {searchTerm.length < 2 && (
-          <div className="absolute top-full left-0 right-0 mt-2 max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden z-50 flex flex-row">
-            <div className='flex flex-row text-black font-bold mr-5'>
-            Search Suggestions:
-          </div>
-          {suggestions.map((suggestion, index) => (
-            <div key={index} className="p-4 border-b hover:bg-gray-50 cursor-pointer text-black">
-              {suggestion}
-            </div>
-          ))}
-        </div>
-      )} */}
-
-      {/* Search Results Dropdown */}
       <AnimatePresence>
-        {searchResults.length > 0 && (
+        {(filteredResults.length > 0 || searchResults.length > 0) && (
           <motion.div 
+            ref={resultsRef}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 right-0 mt-2 max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden z-50 h-100 overflow-y-auto"
+            className={`absolute top-full left-0 right-0 mt-2 max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden z-50 ${searchResults.length > 3 ? 'h-100': 'h-50Z'} overflow-y-auto`}
+            onMouseEnter={() => setIsMouseInside(true)} onMouseLeave={() => setIsMouseInside(false)}
           >
-            {searchResults.map((result, index) => (
+            {(filteredResults.length > 0 ? filteredResults : searchResults).map((result, index, arr) => (
               <motion.div
                 key={result.id}
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
+                transition={{ duration: 0.2, delay: (arr.length - index - 1) * 0.05 }}
               >
                 <Link
                   href={{

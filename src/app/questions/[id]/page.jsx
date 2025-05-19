@@ -291,14 +291,14 @@ export default function QuestionPage({ params }) {
             <TimeFormating date={question.date} />
           </span>
           <span className="flex">
-            <Link href={`/users/${replies[0]?.author.username}`} className="flex items-center gap-2">
+            <Link href={`/users/${question?.author.username}`} className="flex items-center gap-2">
               <img
-                src={replies[0]?.author.avatar}
-                alt={replies[0]?.author.name}
+                src={question?.author.avatar}
+                alt={question?.author.name}
                 className="w-6 h-6 rounded-full"
               />
               <span className="display-inline">
-                {replies[0]?.author.name}
+                {question?.author.name}
               </span>
             </Link>
           </span>

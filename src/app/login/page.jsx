@@ -32,12 +32,23 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // 1️⃣ Already have a JWT + user in Redux? go straight to profile
+  // 1️⃣ Already have a JWT + user in Redux? go straight to profile'
+
+  useEffect(() => {
+    console.log('user', user);
+    console.log('--------------------------------');
+    console.log('token', token);
+    console.log('--------------------------------');
+    console.log('session', session);
+    console.log('--------------------------------');
+  },[token, user, session])
+    
   useEffect(() => {
     if (token && user) {
       router.replace('/profile');
     }
   }, [token, user, router]);
+
 
   // 2️⃣ NextAuth just finished social login?
   useEffect(() => {
@@ -54,7 +65,7 @@ export default function LoginPage() {
         }
       }));
       setToken(session.wpJwt);
-      router.replace('/profile');
+      // router.replace('/profile');
     }
   }, [session, dispatch, router]);
 
@@ -73,7 +84,7 @@ export default function LoginPage() {
       }
       if (data.token) {
         dispatch(loginSuccess({
-          user:  data.user.data,
+          user:  data.user,
           token: data.token
         }));
         setToken(data.token);
