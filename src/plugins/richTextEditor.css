@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.tiptap {
+  @apply font-sans text-sm leading-6 text-[#1d1c1d] bg-white p-2.5 rounded;
+}
+
+.ProseMirror {
+  @apply min-h-[150px] p-3 outline-none text-base;
+}
+
+button {
+  @apply bg-transparent border-none px-2 py-1 font-medium cursor-pointer;
+}
+
+button:hover {
+  @apply bg-gray-200 rounded;
+}
+
+.active-btn,
+.is-active {
+  @apply bg-gray-300 rounded;
+}
+
+.editor {
+  @apply border border-gray-300 rounded-b-lg p-2;
+}
+
+.button-group {
+  @apply bg-gray-100 p-2.5 rounded border border-gray-200 mt-5;
+
+  button {
+    @apply m-1;
+  }
+}
+
+/* Optional for form refinements */
+form {
+  @apply border-0 !important;
+}
+
+form > div:nth-child(2) {
+  @apply border border-gray-600 mt-5 rounded-xl;
+}
+
+form > div:nth-child(2) > div {
+  @apply rounded-2xl;
+}

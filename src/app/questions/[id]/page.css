@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.accordion-title {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    background: navy;
+    padding: 20px;
+    font-weight: 700;
+}
+
+.accordion-title.open {
+    max-height: 1000px;
+}

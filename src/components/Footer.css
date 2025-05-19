@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.footer {
+  @apply bg-black text-white py-8;
+}
+
+.footer-content {
+  @apply max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8;
+}
+
+.footer-section h3 {
+  @apply text-lg font-semibold mb-4;
+}
+
+.footer-section ul {
+  @apply list-none space-y-2;
+}
+
+.footer-section li {
+  @apply text-gray-300 hover:text-white cursor-pointer;
+}
+
+.footer-bottom {
+  @apply mt-8 border-t border-gray-700 pt-4 text-center;
+}
+
+.subscribe-button {
+  @apply bg-[#191153] text-white py-2 px-6 rounded-full hover:bg-[#2a1c7a] font-medium;
+}
+
+.social-links {
+  @apply mt-4 space-x-4;
+}
+
+.social-links a {
+  @apply inline-block text-gray-300 hover:text-white;
+}
+
+.footer-legal {
+  @apply mt-4 space-x-4;
+}
+
+.footer-legal a {
+  @apply inline-block text-sm text-gray-400 hover:text-white;
+}

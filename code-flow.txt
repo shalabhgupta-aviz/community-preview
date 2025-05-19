@@ -1,0 +1,86 @@
+[Frontend Form] (src/app/login/page.jsx)
+        |
+        | // Google Login Flow
+        | <button onClick={() => signIn('google', { callbackUrl: '/profile' })}>
+        |   Continue with Google
+        | </button>
+        | 
+        | // Regular Login Flow
+        | <form onSubmit={handleSubmit}>
+        |   <input name="email" />
+        |   <input name="password" type="password" />
+        |   <button type="submit">Login</button>
+        | </form>
+        v
+[Authentication]
+        |
+        | // Google Login: src/app/api/auth/[...nextauth]/route.js
+        | - NextAuth handles Google OAuth flow
+        | - GoogleProvider configured with clientId/Secret
+        | - Callbacks:
+        |   - jwt(): Stores access_token and user in token
+        |   - session(): Copies token data to session
+        |   - redirect(): Routes to /profile
+        |
+        | // Regular Login: src/lib/auth.js
+        | - loginUser(username, password)
+        | - POST /wp-json/jwt-auth/v1/token
+        | - Stores JWT token via setToken()
+        v
+[Token Processing] 
+        |
+        | // Google Login: src/components/ClientProvider.jsx
+        | - useSession() provides session data
+        | - On session.user available:
+        |   POST /api/social-login with email/name
+        |   dispatch(loginSuccess({user, token: 'social'}))
+        |
+        | // Regular Login: src/lib/auth.js
+        | - setToken() stores in js-cookie
+        | - getUserProfile() fetches user data
+        v
+[User Profile]
+        |
+        | // Google Login: src/app/api/social-login/route.js
+        | - Creates normalized user object:
+        |   {id, username, email, name, roles}
+        |
+        | // Regular Login: src/store/api/wpApi.js
+        | - useGetCurrentUserQuery()
+        | - GET /wp/v2/users/me?context=edit
+        | - Returns WP user data
+        v
+[Redux State] (src/store/slices/authSlice.js)
+        |
+        | // Both flows use same Redux state
+        | const authSlice = createSlice({
+        |   name: 'auth',
+        |   reducers: {
+        |     loginSuccess: (state, {payload}) => {
+        |       state.isAuthenticated = true;
+        |       state.user = payload.user;
+        |       state.token = payload.token;
+        |     }
+        |   }
+        | })
+        v
+[Route Protection] (src/components/ProtectedRoute.jsx)
+        |
+        | // Checks Redux auth state
+        | const { isAuthenticated } = useSelector(state => state.auth);
+        | 
+        | if (!isAuthenticated) {
+        |   return <Navigate to="/login" />;
+        | }
+        | 
+        | return <>{children}</>;
+        |
+    [Decision]
+        |
+   /          \
+Yes           No
+|             |
+v             v
+Render     Redirect
+Route      to Login
+__________________________________
