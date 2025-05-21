@@ -35,7 +35,7 @@ export default function Layout({ children }) {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-grow bg-gray-50">
+      <main className="flex-grow bg-[#F6F4FF]">
         <div className='pt-15'>
           {children}
         </div>

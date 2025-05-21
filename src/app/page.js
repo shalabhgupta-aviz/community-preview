@@ -5,28 +5,40 @@ import './page.css'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import SearchBarWithCat from '../components/SearchBarwithCat'
-import broadcom from '../../public/broadcom.png'
-
+import broadcom from '../../public/company-logos/broadcom.png'
+import cisco from '../../public/company-logos/cisco.png'
+import celestica from '../../public/company-logos/celestica.png'
+import micas from '../../public/company-logos/micas.png'
+import nvidia from '../../public/company-logos/nvidia.png'
+import optiv from '../../public/company-logos/optiv.png'
+import wwt from '../../public/company-logos/wwt.png'
+import wistron from '../../public/company-logos/wistron.png'
+import carahsoft from '../../public/company-logos/carahsoft.png'
+import connectItSolutions from '../../public/company-logos/connect-it-solutions.png'
+import eps from '../../public/company-logos/eps.png'
+import hardwareNation from '../../public/company-logos/hardware-nation.png'
+import edgeCore from '../../public/company-logos/edgecore.png'
+import keysight from '../../public/company-logos/keysight.png'
+import pnnetworks from '../../public/company-logos/pnetworks.png'
 const technologyPartners = [
   broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
+  cisco,
+  celestica,
+  edgeCore,
+  keysight,
+  micas,
+  nvidia,
+  wistron,
 ]
 const distriPartners = [
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
-  broadcom,
+  carahsoft,
+  connectItSolutions,
+  eps,
+  hardwareNation,
+  micas,
+  optiv,
+  pnnetworks,
+  wwt,
 ]
 
 export default function Home() {
@@ -88,19 +100,19 @@ export default function Home() {
         >
           Technology Partners
         </motion.h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 items-center">
           {technologyPartners.map((src, index) => (
             <motion.div 
               key={`${src}-${index}`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="p-4 bg-white rounded-lg flex items-center justify-center border-1 border-solid border-gray-200 hover:shadow-lg transition-shadow"
+              className="p-4 bg-white rounded-lg flex items-center justify-center border-1 border-solid border-gray-200"
             >
               <Image 
                 src={src} 
                 alt="Partner logo" 
-                width={120} 
+                width={150} 
                 height={60}
                 className="object-contain"
               />
@@ -124,19 +136,19 @@ export default function Home() {
         >
           Aviz VARs and Distributors
         </motion.h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 items-center">
           {distriPartners.map((src, index) => (
             <motion.div 
               key={`${src}-${index}`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
-              className="p-4 bg-white rounded-lg flex items-center justify-center border-1 border-solid border-gray-200 hover:shadow-lg transition-shadow"
+              className="p-4 bg-white rounded-lg flex items-center justify-center border-1 border-solid border-gray-200"
             >
               <Image 
                 src={src} 
                 alt="Distributor logo" 
-                width={120} 
+                width={150} 
                 height={60}
                 className="object-contain"
               />

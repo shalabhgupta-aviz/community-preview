@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function WelcomePopup({ showOnFirstLogin, showOnAutoSignIn }) {
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(true);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem('hasVisited');
